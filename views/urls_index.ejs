@@ -1,44 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous" />
   <title>TinyApp - My URLs</title>
-  <!-- Bootstrap CSS -->
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
   <%- include('partials/_header') %>
-
-  <div class="container mt-4">
-    <h1>My URLs</h1>
-    <table class="table">
+  
+  <main style="margin: 1em;">
+    <h2>My URLs</h2>
+    <table class="table table-bordered">
       <thead>
         <tr>
           <th>Short URL</th>
           <th>Long URL</th>
+          <th>Edit</th>
           <th>Delete</th>
         </tr>
       </thead>
       <tbody>
-        <% for (const shortURL in urls) { %>
+        <% for (const id in urls) { %>
           <tr>
-            <td><a href="/u/<%= shortURL %>"><%= shortURL %></a></td>
-            <td><%= urls[shortURL] %></td>
+            <td><a href="/u/<%= id %>"><%= id %></a></td>
+            <td><%= urls[id] %></td>
+            <td><a href="/urls/<%= id %>">Edit</a></td>
             <td>
-              <form method="POST" action="/urls/<%= shortURL %>/delete">
-                <button type="submit" class="btn btn-danger">Delete</button>
+              <form method="POST" action="/urls/<%= id %>/delete">
+                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
               </form>
             </td>
           </tr>
         <% } %>
       </tbody>
     </table>
-  </div>
-
-  <!-- Bootstrap JS -->
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</body>
-</html>
+  </main>
+  
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min
