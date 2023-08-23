@@ -1,8 +1,10 @@
 const express = require("express");
+const path = require("path"); // Import the 'path' module
 const app = express();
 const PORT = 8080;
 
 app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views")); // Set the views directory
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -13,14 +15,18 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
+app.get("/urls", (req, res) => {
+  const templateVars = { urls: urlDatabase };
+  res.render("urls_index", templateVars);
 });
 
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
+app.get("/urls/:id", (req, res) => {
+  const id = req.params.id;
+  const longURL = urlDatabase[id]; // Look up the longURL using the id
+  const templateVars = { id, longURL };
+  res.render("urls_show", templateVars);
 });
 
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`TinyApp listening on port ${PORT}!`);
 });
