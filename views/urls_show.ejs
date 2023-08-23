@@ -6,6 +6,7 @@
   <title>TinyApp - URL Details</title>
 </head>
 <body>
+  <%- include('partials/_header') %>
   <h1>TinyURL for: <%= longURL %></h1>
   <p>Short URL ID: <a href="/urls/<%= id %>"><%= id %></a></p>
   <a href="#">Create a new URL</a>
