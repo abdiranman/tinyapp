@@ -1,9 +1,7 @@
 const express = require("express");
+const bodyParser = require("body-parser");
 const app = express();
 const PORT = 8080;
-
-const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({ extended: true }));
 
 app.set("view engine", "ejs");
 
@@ -12,26 +10,20 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Home page
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+// Display list of URLs
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
-app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
-});
-
-app.post("/urls", (req, res) => {
-  const longURL = req.body.longURL;
-  const shortURL = generateRandomString();
-  urlDatabase[shortURL] = longURL;
-  res.redirect(`/urls/${shortURL}`);
-});
-
+// Display individual URL
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
@@ -39,19 +31,42 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-app.post("/urls/:id/delete", (req, res) => {
-  const shortURL = req.params.id;
-  delete urlDatabase[shortURL];
+// POST route to update a URL resource
+app.post("/urls/:id", (req, res) => {
+  const id = req.params.id;
+  const newLongURL = req.body.longURL;
+  urlDatabase[id] = newLongURL;
   res.redirect("/urls");
 });
 
+// POST route to delete a URL resource
+app.post("/urls/:id/delete", (req, res) => {
+  const id = req.params.id;
+  delete urlDatabase[id];
+  res.redirect("/urls");
+});
+
+// GET route to display the form for creating new URLs
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+});
+
+// POST route to create a new URL resource
+app.post("/urls", (req, res) => {
+  const randomID = generateRandomString();
+  const longURL = req.body.longURL;
+  urlDatabase[randomID] = longURL;
+  res.redirect(`/urls/${randomID}`);
+});
+
+// Redirect short URLs to long URLs
 app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id;
   const longURL = urlDatabase[shortURL];
   if (longURL) {
     res.redirect(longURL);
   } else {
-    res.status(404).send("Short URL not found");
+    res.status(404).send("URL Not Found");
   }
 });
 
@@ -59,12 +74,12 @@ app.listen(PORT, () => {
   console.log(`TinyApp listening on port ${PORT}!`);
 });
 
+// Function to generate a random string
 function generateRandomString() {
+  let randomStr = "";
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let randomString = "";
   for (let i = 0; i < 6; i++) {
-    const randomIndex = Math.floor(Math.random() * characters.length);
-    randomString += characters[randomIndex];
+    randomStr += characters.charAt(Math.floor(Math.random() * characters.length));
   }
-  return randomString;
+  return randomStr;
 }
