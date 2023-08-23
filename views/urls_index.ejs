@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TinyApp - URLs</title>
+</head>
+<body>
+  <header>
+    <h1>My URLs</h1>
+  </header>
+  <main>
+    <ul>
+      <% for (const shortURL in urls) { %>
+        <li><%= shortURL %>: <%= urls[shortURL] %></li>
+      <% } %>
+    </ul>
+    <a href="#">Shorten a new URL</a>
+  </main>
+</body>
+</html>
