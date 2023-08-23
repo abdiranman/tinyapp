@@ -3,19 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TinyApp - URLs</title>
+  <title>TinyApp - My URLs</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-  <% include partials/_header %>
-  <h1>My URLs</h1>
-  <ul>
-    <% for (let id in urls) { %>
-      <li>
-        Long URL: <%= urls[id] %>
-        <br>
-        Short URL ID: <a href="/urls/<%= id %>"><%= id %></a>
-      </li>
-    <% } %>
-  </ul>
+  <%- include('partials/_header') %>
+
+  <div class="container mt-4">
+    <h1>My URLs</h1>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Short URL</th>
+          <th>Long URL</th>
+          <th>Delete</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% for (const shortURL in urls) { %>
+          <tr>
+            <td><a href="/u/<%= shortURL %>"><%= shortURL %></a></td>
+            <td><%= urls[shortURL] %></td>
+            <td>
+              <form method="POST" action="/urls/<%= shortURL %>/delete">
+                <button type="submit" class="btn btn-danger">Delete</button>
+              </form>
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
