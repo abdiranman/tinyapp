@@ -11,7 +11,12 @@
       </li>
       <% if (username) { %>
         <li class="nav-item">
-          <a class="nav-link" href="/logout">Logout</a>
+          <span class="nav-link">Logged in as: <%= username %></span>
+        </li>
+        <li class="nav-item">
+          <form class="form-inline" method="POST" action="/logout">
+            <button class="btn btn-primary my-2 my-sm-0" type="submit">Logout</button>
+          </form>
         </li>
       <% } else { %>
         <li class="nav-item">
