@@ -15,12 +15,7 @@ app.use(cookieParser()); // Use cookie-parser middleware
 
 // Function to generate a random string
 function generateRandomString() {
-  let randomStr = "";
-  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  for (let i = 0; i < 6; i++) {
-    randomStr += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return randomStr;
+  // ...
 }
 
 // Home page
@@ -30,7 +25,10 @@ app.get("/", (req, res) => {
 
 // Display list of URLs
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = {
+    urls: urlDatabase,
+    username: req.cookies["username"] // Pass in the username
+  };
   res.render("urls_index", templateVars);
 });
 
@@ -38,7 +36,11 @@ app.get("/urls", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
-  const templateVars = { id, longURL };
+  const templateVars = {
+    id,
+    longURL,
+    username: req.cookies["username"] // Pass in the username
+  };
   res.render("urls_show", templateVars);
 });
 
