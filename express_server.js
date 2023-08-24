@@ -1,16 +1,19 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser"); // Adding cookie-parser
 const app = express();
 const PORT = 8080;
 
 app.set("view engine", "ejs");
 
+// URL Database
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
 
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser()); // Using cookie-parser middleware
 
 // Home page
 app.get("/", (req, res) => {
@@ -19,7 +22,7 @@ app.get("/", (req, res) => {
 
 // Display list of URLs
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { urls: urlDatabase, username: req.cookies.username }; // Pass username to template
   res.render("urls_index", templateVars);
 });
 
@@ -27,7 +30,7 @@ app.get("/urls", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
-  const templateVars = { id, longURL };
+  const templateVars = { id, longURL, username: req.cookies.username }; // Pass username to template
   res.render("urls_show", templateVars);
 });
 
@@ -48,7 +51,7 @@ app.post("/urls/:id/delete", (req, res) => {
 
 // GET route to display the form for creating new URLs
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  res.render("urls_new", { username: req.cookies.username }); // Pass username to template
 });
 
 // POST route to create a new URL resource
@@ -68,6 +71,13 @@ app.get("/u/:id", (req, res) => {
   } else {
     res.status(404).send("URL Not Found");
   }
+});
+
+// User login form
+app.post("/login", (req, res) => {
+  const username = req.body.username;
+  res.cookie("username", username);
+  res.redirect("/urls");
 });
 
 app.listen(PORT, () => {
