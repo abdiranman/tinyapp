@@ -40,6 +40,17 @@ function generateRandomString() {
   return randomStr;
 }
 
+// Function to retrieve URLs owned by a user
+function urlsForUser(id) {
+  const userURLs = {};
+  for (const shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].userID === id) {
+      userURLs[shortURL] = urlDatabase[shortURL];
+    }
+  }
+  return userURLs;
+}
+
 // Home page
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -49,12 +60,13 @@ app.get("/", (req, res) => {
 app.get("/urls", (req, res) => {
   const user = users[req.cookies.user_id];
   if (!user) {
-    res.redirect("/login");
+    res.render("login_required");
     return;
   }
   
+  const userURLs = urlsForUser(user.id);
   const templateVars = {
-    urls: urlDatabase,
+    urls: userURLs,
     user: user
   };
   res.render("urls_index", templateVars);
