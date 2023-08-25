@@ -1,7 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
-const bcrypt = require("bcryptjs"); // Require bcryptjs
+const cookieSession = require("cookie-session");
 const app = express();
 const PORT = 8080;
 
@@ -16,7 +15,13 @@ const users = {
 };
 
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser()); // Use cookie-parser middleware
+
+// Use cookie-session middleware
+app.use(cookieSession({
+  name: "session",
+  keys: ["your-secret-key"], // Replace with your actual secret key(s)
+  maxAge: 24 * 60 * 60 * 1000, // Cookie expiration time in milliseconds (1 day)
+}));
 
 // Function to generate a random string
 function generateRandomString() {
@@ -35,74 +40,14 @@ app.get("/", (req, res) => {
 
 // Display list of URLs
 app.get("/urls", (req, res) => {
-    const templateVars = {
-      urls: urlDatabase,
-      user: users[req.cookies['user_id']]
-    };
-    res.render("urls_index", templateVars);
-  });
-// ... Other routes ...
-
-// Display login form
-app.get("/login", (req, res) => {
-  res.render("login");
-});
-
-// Handle login form submission
-app.post("/login", (req, res) => {
-  const email = req.body.email;
-  const password = req.body.password;
-  
-  for (const userID in users) {
-    const user = users[userID];
-    if (user.email === email && bcrypt.compareSync(password, user.password)) { // Use bcrypt.compareSync
-      res.cookie("user_id", user.id);
-      res.redirect("/urls");
-      return;
-    }
-  }
-  
-  res.status(403).send("Invalid email or password");
-});
-
-// Handle logout
-app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
-  res.redirect("/login");
-});
-
-// Display registration form
-app.get("/register", (req, res) => {
-  res.render("register");
-});
-
-// Handle registration form submission
-app.post("/register", (req, res) => {
-  const email = req.body.email;
-  const password = req.body.password;
-  
-  if (!email || !password) {
-    res.status(400).send("Email and password fields cannot be empty");
-    return;
-  }
-  
-  for (const userID in users) {
-    if (users[userID].email === email) {
-      res.status(400).send("Email already exists");
-      return;
-    }
-  }
-  
-  const randomID = generateRandomString();
-  const hashedPassword = bcrypt.hashSync(password, 10); // Use bcrypt to hash the password
-  users[randomID] = {
-    id: randomID,
-    email: email,
-    password: hashedPassword, // Store the hashed password
+  const templateVars = {
+    urls: urlDatabase,
+    user: users[req.session.user_id]
   };
-  res.cookie("user_id", randomID);
-  res.redirect("/urls");
+  res.render("urls_index", templateVars);
 });
+
+// ... Other routes ...
 
 app.listen(PORT, () => {
   console.log(`TinyApp listening on port ${PORT}!`);
