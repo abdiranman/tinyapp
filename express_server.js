@@ -7,87 +7,65 @@ const PORT = 8080;
 app.set("view engine", "ejs");
 
 const urlDatabase = {
-  b6UTxQ: {
-    longURL: "https://www.tsn.ca",
-    userID: "aJ48lW",
-  },
-  i3BoGr: {
-    longURL: "https://www.google.ca",
-    userID: "aJ48lW",
-  },
-  // ... Other URL entries
+  // ... Your URL database entries
 };
 
 const users = {
-  aJ48lW: {
-    id: "aJ48lW",
-    email: "user@example.com",
-    password: "hashedPassword",
-  },
-  // ... Other user entries
+  // ... Your user database entries
 };
 
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser()); // Use cookie-parser middleware
+app.use(cookieParser());
 
 // Function to generate a random string
 function generateRandomString() {
-  let randomStr = "";
-  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  for (let i = 0; i < 6; i++) {
-    randomStr += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return randomStr;
+  // ... Your random string generation code
 }
-
-// Function to retrieve URLs owned by a user
-function urlsForUser(id) {
-  const userURLs = {};
-  for (const shortURL in urlDatabase) {
-    if (urlDatabase[shortURL].userID === id) {
-      userURLs[shortURL] = urlDatabase[shortURL];
-    }
-  }
-  return userURLs;
-}
-
-// Home page
-app.get("/", (req, res) => {
-  res.send("Hello!");
-});
-
-// Display list of URLs
-app.get("/urls", (req, res) => {
-  const user = users[req.cookies.user_id];
-  if (!user) {
-    res.render("login_required");
-    return;
-  }
-  
-  const userURLs = urlsForUser(user.id);
-  const templateVars = {
-    urls: userURLs,
-    user: user
-  };
-  res.render("urls_index", templateVars);
-});
 
 // ... Other routes ...
 
-// Display the long URL for a given short URL
-app.get("/u/:id", (req, res) => {
+// POST route for editing URLs
+app.post("/urls/:id", (req, res) => {
+  const userID = req.cookies.user_id;
   const shortURL = req.params.id;
-  const urlEntry = urlDatabase[shortURL];
   
-  if (!urlEntry) {
-    res.status(404).send("Short URL not found");
-    return;
+  if (!userID) {
+    return res.status(401).send("You must be logged in to edit URLs.");
   }
 
-  res.redirect(urlEntry.longURL);
+  if (!urlDatabase[shortURL]) {
+    return res.status(404).send("URL not found.");
+  }
+
+  if (urlDatabase[shortURL].userID !== userID) {
+    return res.status(403).send("You do not have permission to edit this URL.");
+  }
+
+  const newLongURL = req.body.newLongURL;
+  urlDatabase[shortURL].longURL = newLongURL;
+  res.redirect("/urls");
 });
 
-// ... Other routes ...
+// POST route for deleting URLs
+app.post("/urls/:id/delete", (req, res) => {
+  const userID = req.cookies.user_id;
+  const shortURL = req.params.id;
+
+  if (!userID) {
+    return res.status(401).send("You must be logged in to delete URLs.");
+  }
+
+  if (!urlDatabase[shortURL]) {
+    return res.status(404).send("URL not found.");
+  }
+
+  if (urlDatabase[shortURL].userID !== userID) {
+    return res.status(403).send("You do not have permission to delete this URL.");
+  }
+
+  delete urlDatabase[shortURL];
+  res.redirect("/urls");
+});
 
 app.listen(PORT, () => {
   console.log(`TinyApp listening on port ${PORT}!`);
