@@ -10,6 +10,19 @@ const urlDatabase = {
   // ... Your URL database entries
 };
 
+const users = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+  "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
+};
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
@@ -30,7 +43,7 @@ app.get("/", (req, res) => {
 
 // Display list of URLs
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { urls: urlDatabase, username: req.cookies.username };
   res.render("urls_index", templateVars);
 });
 
@@ -38,7 +51,7 @@ app.get("/urls", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
-  const templateVars = { id, longURL };
+  const templateVars = { id, longURL, username: req.cookies.username };
   res.render("urls_show", templateVars);
 });
 
@@ -59,7 +72,7 @@ app.post("/urls/:id/delete", (req, res) => {
 
 // GET route to display the form for creating new URLs
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  res.render("urls_new", { username: req.cookies.username });
 });
 
 // POST route to create a new URL resource
@@ -83,7 +96,7 @@ app.get("/u/:id", (req, res) => {
 
 // Display login form
 app.get("/login", (req, res) => {
-  res.render("login");
+  res.render("login", { username: req.cookies.username });
 });
 
 // Handle login form submission
@@ -95,18 +108,8 @@ app.post("/login", (req, res) => {
 
 // Display registration form
 app.get("/register", (req, res) => {
-  res.render("register");
+  res.render("register", { username: req.cookies.username });
 });
-
-// Handle user registration
-app.post("/register", (req, res) => {
-  const email = req.body.email;
-  const password = req.body.password;
-  console.log("User registered:", email, password);
-  res.redirect("/login"); // Redirect to the login page for now
-});
-
-// ... (other routes and server setup)
 
 app.listen(PORT, () => {
   console.log(`TinyApp listening on port ${PORT}!`);
