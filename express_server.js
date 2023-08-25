@@ -11,7 +11,7 @@ const urlDatabase = {
 };
 
 const users = {
-  // ... Your users database entries
+  // ... Your users object entries
 };
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -29,7 +29,10 @@ function generateRandomString() {
 
 // Home page
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  const templateVars = {
+    user: users[req.cookies["user_id"]],
+  };
+  res.render("index", templateVars);
 });
 
 // Display list of URLs
@@ -41,43 +44,82 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-// ... Other routes
+app.get("/urls/:id", (req, res) => {
+  const id = req.params.id;
+  const longURL = urlDatabase[id];
+  const templateVars = {
+    id,
+    longURL,
+    user: users[req.cookies["user_id"]],
+  };
+  res.render("urls_show", templateVars);
+});
 
-// Display registration form
+app.post("/urls/:id", (req, res) => {
+  // ... Update URL logic
+});
+
+app.post("/urls/:id/delete", (req, res) => {
+  // ... Delete URL logic
+});
+
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+});
+
+app.post("/urls", (req, res) => {
+  // ... Create URL logic
+});
+
+app.get("/u/:id", (req, res) => {
+  // ... Redirect short URLs logic
+});
+
+app.get("/login", (req, res) => {
+  res.render("login");
+});
+
+app.post("/login", (req, res) => {
+  const email = req.body.email;
+  const user = findUserByEmail(email);
+  if (user) {
+    res.cookie("user_id", user.id);
+  }
+  res.redirect("/urls");
+});
+
 app.get("/register", (req, res) => {
   res.render("register");
 });
 
-// Handle user registration
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const userId = generateRandomString();
-
-  if (!email || !password) {
-    res.status(400).send("Email and password cannot be empty");
-    return;
-  }
-
-  for (const userId in users) {
-    if (users[userId].email === email) {
-      res.status(400).send("Email already registered");
-      return;
-    }
-  }
-
-  users[userId] = {
-    id: userId,
-    email: email,
-    password: password,
+  const id = generateRandomString();
+  users[id] = {
+    id,
+    email,
+    password,
   };
-
-  res.cookie("user_id", userId);
+  res.cookie("user_id", id);
   res.redirect("/urls");
 });
 
-// ... Other routes
+app.get("/logout", (req, res) => {
+  res.clearCookie("user_id");
+  res.redirect("/urls");
+});
 
 app.listen(PORT, () => {
   console.log(`TinyApp listening on port ${PORT}!`);
 });
+
+// Function to find a user by email
+function findUserByEmail(email) {
+  for (const userId in users) {
+    if (users[userId].email === email) {
+      return users[userId];
+    }
+  }
+  return null;
+}
