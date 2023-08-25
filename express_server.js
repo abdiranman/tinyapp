@@ -7,11 +7,24 @@ const PORT = 8080;
 app.set("view engine", "ejs");
 
 const urlDatabase = {
-  // ... Your URL database entries
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
+  // ... Other URL entries
 };
 
 const users = {
-  // ... Your user database entries
+  aJ48lW: {
+    id: "aJ48lW",
+    email: "user@example.com",
+    password: "hashedPassword",
+  },
+  // ... Other user entries
 };
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -34,9 +47,15 @@ app.get("/", (req, res) => {
 
 // Display list of URLs
 app.get("/urls", (req, res) => {
+  const user = users[req.cookies.user_id];
+  if (!user) {
+    res.redirect("/login");
+    return;
+  }
+  
   const templateVars = {
     urls: urlDatabase,
-    user: users[req.cookies.user_id]
+    user: user
   };
   res.render("urls_index", templateVars);
 });
@@ -46,14 +65,14 @@ app.get("/urls", (req, res) => {
 // Display the long URL for a given short URL
 app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id;
-  const longURL = urlDatabase[shortURL];
+  const urlEntry = urlDatabase[shortURL];
   
-  if (!longURL) {
+  if (!urlEntry) {
     res.status(404).send("Short URL not found");
     return;
   }
 
-  res.redirect(longURL);
+  res.redirect(urlEntry.longURL);
 });
 
 // ... Other routes ...
