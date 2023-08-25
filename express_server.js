@@ -1,6 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const bcrypt = require("bcryptjs"); // Import bcryptjs library
 const app = express();
 const PORT = 8080;
 
@@ -19,51 +20,70 @@ app.use(cookieParser());
 
 // Function to generate a random string
 function generateRandomString() {
-  // ... Your random string generation code
+  // ... (same as before)
 }
+
+// Home page
+app.get("/", (req, res) => {
+  res.send("Hello!");
+});
+
+// Display list of URLs
+app.get("/urls", (req, res) => {
+  // ... (same as before)
+});
 
 // ... Other routes ...
 
-// POST route for editing URLs
-app.post("/urls/:id", (req, res) => {
-  const userID = req.cookies.user_id;
-  const shortURL = req.params.id;
-  
-  if (!userID) {
-    return res.status(401).send("You must be logged in to edit URLs.");
-  }
-
-  if (!urlDatabase[shortURL]) {
-    return res.status(404).send("URL not found.");
-  }
-
-  if (urlDatabase[shortURL].userID !== userID) {
-    return res.status(403).send("You do not have permission to edit this URL.");
-  }
-
-  const newLongURL = req.body.newLongURL;
-  urlDatabase[shortURL].longURL = newLongURL;
-  res.redirect("/urls");
+// Display login form
+app.get("/login", (req, res) => {
+  res.render("login");
 });
 
-// POST route for deleting URLs
-app.post("/urls/:id/delete", (req, res) => {
-  const userID = req.cookies.user_id;
-  const shortURL = req.params.id;
+// Handle login form submission
+app.post("/login", (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
 
-  if (!userID) {
-    return res.status(401).send("You must be logged in to delete URLs.");
+  for (const userID in users) {
+    const user = users[userID];
+    if (user.email === email && bcrypt.compareSync(password, user.password)) {
+      res.cookie("user_id", user.id);
+      res.redirect("/urls");
+      return;
+    }
   }
 
-  if (!urlDatabase[shortURL]) {
-    return res.status(404).send("URL not found.");
+  res.status(403).send("Invalid email or password");
+});
+
+// ... (other routes)
+
+// Handle registration form submission
+app.post("/register", (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+
+  if (!email || !password) {
+    res.status(400).send("Email and password fields cannot be empty");
+    return;
   }
 
-  if (urlDatabase[shortURL].userID !== userID) {
-    return res.status(403).send("You do not have permission to delete this URL.");
+  for (const userID in users) {
+    if (users[userID].email === email) {
+      res.status(400).send("Email already exists");
+      return;
+    }
   }
 
-  delete urlDatabase[shortURL];
+  const randomID = generateRandomString();
+  const hashedPassword = bcrypt.hashSync(password, 10); // Hash the password
+  users[randomID] = {
+    id: randomID,
+    email: email,
+    password: hashedPassword, // Save the hashed password
+  };
+  res.cookie("user_id", randomID);
   res.redirect("/urls");
 });
 
