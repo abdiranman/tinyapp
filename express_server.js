@@ -7,25 +7,15 @@ const PORT = 8080;
 app.set("view engine", "ejs");
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  // ... Your URL database entries
 };
 
 const users = {
-  userRandomID: {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur",
-  },
-  user2RandomID: {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk",
-  },
+  // ... Your user database entries
 };
 
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use(cookieParser()); // Use cookie-parser middleware
 
 // Function to generate a random string
 function generateRandomString() {
@@ -44,60 +34,14 @@ app.get("/", (req, res) => {
 
 // Display list of URLs
 app.get("/urls", (req, res) => {
-  const userId = req.cookies["user_id"];
-  const user = users[userId];
-  const templateVars = { urls: urlDatabase, user };
+  const templateVars = {
+    urls: urlDatabase,
+    user: users[req.cookies.user_id]
+  };
   res.render("urls_index", templateVars);
 });
 
-// Display individual URL
-app.get("/urls/:id", (req, res) => {
-  const id = req.params.id;
-  const longURL = urlDatabase[id];
-  const userId = req.cookies["user_id"];
-  const user = users[userId];
-  const templateVars = { id, longURL, user };
-  res.render("urls_show", templateVars);
-});
-
-// POST route to update a URL resource
-app.post("/urls/:id", (req, res) => {
-  const id = req.params.id;
-  const newLongURL = req.body.longURL;
-  urlDatabase[id] = newLongURL;
-  res.redirect("/urls");
-});
-
-// POST route to delete a URL resource
-app.post("/urls/:id/delete", (req, res) => {
-  const id = req.params.id;
-  delete urlDatabase[id];
-  res.redirect("/urls");
-});
-
-// GET route to display the form for creating new URLs
-app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
-});
-
-// POST route to create a new URL resource
-app.post("/urls", (req, res) => {
-  const randomID = generateRandomString();
-  const longURL = req.body.longURL;
-  urlDatabase[randomID] = longURL;
-  res.redirect(`/urls/${randomID}`);
-});
-
-// Redirect short URLs to long URLs
-app.get("/u/:id", (req, res) => {
-  const shortURL = req.params.id;
-  const longURL = urlDatabase[shortURL];
-  if (longURL) {
-    res.redirect(longURL);
-  } else {
-    res.status(404).send("URL Not Found");
-  }
-});
+// ... Other routes ...
 
 // Display login form
 app.get("/login", (req, res) => {
@@ -108,21 +52,23 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const user = findUserByEmail(email, users);
-
-  if (!user || user.password !== password) {
-    res.status(403).send("Invalid email or password");
-    return;
+  
+  for (const userID in users) {
+    const user = users[userID];
+    if (user.email === email && user.password === password) {
+      res.cookie("user_id", user.id);
+      res.redirect("/urls");
+      return;
+    }
   }
-
-  res.cookie("user_id", user.id);
-  res.redirect("/urls");
+  
+  res.status(403).send("Invalid email or password");
 });
 
 // Handle logout
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
-  res.redirect("/urls");
+  res.redirect("/login");
 });
 
 // Display registration form
@@ -134,33 +80,29 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-
+  
   if (!email || !password) {
-    res.status(400).send("Email and password fields are required");
+    res.status(400).send("Email and password fields cannot be empty");
     return;
   }
-
-  if (findUserByEmail(email, users)) {
-    res.status(400).send("Email already registered");
-    return;
+  
+  for (const userID in users) {
+    if (users[userID].email === email) {
+      res.status(400).send("Email already exists");
+      return;
+    }
   }
-
-  const userId = generateRandomString();
-  users[userId] = { id: userId, email, password };
-  res.cookie("user_id", userId);
+  
+  const randomID = generateRandomString();
+  users[randomID] = {
+    id: randomID,
+    email: email,
+    password: password
+  };
+  res.cookie("user_id", randomID);
   res.redirect("/urls");
 });
 
 app.listen(PORT, () => {
   console.log(`TinyApp listening on port ${PORT}!`);
 });
-
-// Helper function to find a user by email
-function findUserByEmail(email, database) {
-  for (const userId in database) {
-    if (database[userId].email === email) {
-      return database[userId];
-    }
-  }
-  return null;
-}
